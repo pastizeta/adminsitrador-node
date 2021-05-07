@@ -2,6 +2,9 @@ const express = require('express')
 const hbs = require('hbs');
 require('dotenv').config();
 
+const { validaJWT } = require('./middlewares/validar-jwt');
+const { redireccionaHome } = require('./controladores/home');
+
 const app = express()
 const port = process.env.PORT;
 
@@ -14,29 +17,30 @@ hbs.registerPartials(__dirname + '/views/partials');
 // servir contenido estatico
 app.use( express.static('public') );
 
-app.get('/', (req, res) => {
-  res.render('home',{
-                    nombre: 'Alejandro Muñoz',
-                    titulo: 'Curso Node'
-                  });
-});
+app.get('/',(req,res) =>{
+  res.render('login');
+})
 
-app.get('/generic', (req, res) => {
-  res.render('generic',{
-    nombre: 'Alejandro Muñoz',
-    titulo: 'Curso Node'
-  });
-});
+app.get('/home', [
+  validaJWT
+],redireccionaHome);
+
+// app.get('/generic', (req, res) => {
+//   res.render('generic',{
+//     nombre: 'Alejandro Muñoz',
+//     titulo: 'Curso Node'
+//   });
+// });
 
 
-app.get('/elements', (req, res) => {
+// app.get('/elements', (req, res) => {
     
-    res.render('elements',{
-      nombre: 'Alejandro Muñoz',
-      titulo: 'Curso Node'
-    });
+//     res.render('elements',{
+//       nombre: 'Alejandro Muñoz',
+//       titulo: 'Curso Node'
+//     });
 
-});
+// });
 
 
 

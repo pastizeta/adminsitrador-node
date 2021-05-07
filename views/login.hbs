@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+
+   
+</head>
+<body>
+    <h4 id ="aviso"></h4>
+    <input type="email" name="email" id="email">
+    <input type="password" name="password" id="password">
+
+    <button type="button" id="btnLogin">Login</button>
+
+     <script type="text/javascript">    
+
+        const url = 'https://restserver-pastizeta.herokuapp.com/api/auth/login';
+
+        var btnLogin = document.getElementById("btnLogin");
+        
+        btnLogin.addEventListener('click',async() =>{
+
+            const correo = document.getElementById('email').value
+            const password = document.getElementById('password').value
+
+             let data = {
+                correo,
+                password
+            }
+            try{
+                let respuesta = await fetch(url, {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json;charset=utf-8'
+                                            },
+                                            body: JSON.stringify(data)
+                                        })
+            
+
+                if(respuesta.ok){
+                    let respErr = await respuesta.json();
+                    //localStorage.setItem('x-token',respErr.token);
+                    window.location="/home?apikey=" +respErr.token;
+                }else{
+                    let respErr = await respuesta.json();
+
+                    alert(respErr.msg);
+                }
+            }catch (err) {
+                console.log("Error al enviar el informacion del login: " + err.message);
+            }
+            
+        })
+
+       
+    </script>
+</body>
+</html>

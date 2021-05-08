@@ -1,113 +1,90 @@
 <!DOCTYPE HTML>
-<!--
-	Road Trip by TEMPLATED
-	templated.co @templatedco
-	Released for free under the Creative Commons Attribution 3.0 license (templated.co/license)
--->
+
 <html>
-	<head>
-		<title>{{titulo}}</title>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="stylesheet" href="assets/css/main.css" />
-	</head>
+	{{> head}}
 	<body>
 
 		<!-- Header -->
-		{{> header}}
-
-		<!-- Nav -->
-		{{> navbar}}	
-
-		<!-- Banner -->
-		<!--
-			Note: To show a background image, set the "data-bg" attribute below
-			to the full filename of your image. This is used in each section to set
-			the background image.
-		-->
-			<section id="banner" class="bg-img" data-bg="banner.jpg">
-				<div class="inner">
-					<header>
-						<h1>This is Road Trip</h1>
-					</header>
+		{{> navbar}}
+		
+		<div class="container">
+			
+			<div class="row bg-light p-3">
+				<div class="col-12">
+					<h4> <span><i class="fas fa-user" style="color:blueviolet"></i></span> Tu Cuenta</h4>
 				</div>
-				<a href="#one" class="more">Learn More</a>
-			</section>
+			</div>
 
-		<!-- One -->
-			<section id="one" class="wrapper post bg-img" data-bg="banner2.jpg">
-				<div class="inner">
-					<article class="box">
-						<header>
-							<h2>Nibh non lobortis mus nibh</h2>
-							<p>01.01.2017</p>
-						</header>
-						<div class="content">
-							<p>Scelerisque enim mi curae erat ultricies lobortis donec velit in per cum consectetur purus a enim platea vestibulum lacinia et elit ante scelerisque vestibulum. At urna condimentum sed vulputate a duis in senectus ullamcorper lacus cubilia consectetur odio proin sociosqu a parturient nam ac blandit praesent aptent. Eros dignissim mus mauris a natoque ad suspendisse nulla a urna in tincidunt tristique enim arcu litora scelerisque eros suspendisse.</p>
+			<hr>
+
+			<div style="display: none;" class="mensaje alert" role="alert"></div>
+
+			<div class="row mt-5" >
+				<div class="col-lg-4 col-sm-6 pt-5">
+					<div class="row"><h6 style="color:blueviolet">Perfil</h6></div>
+					<div class="row"><p>Tu Correo es tu identidad en el Administrador y es usado para hacer Login.</p></div>
+					<div class="row"><p>Ten en cuenta que si modificas el correo tendras que iniciar sesion nuevamente, ya que tu sesion se cerrara.</p></div>
+				</div>
+				<div class="col-lg-4 col-sm-6 pt-5">
+					<form>
+						<div class="mb-3">
+							<label for="exampleInputEmail1" class="form-label"><strong>Direccion de Correo</strong></label>
+							<div class="input-group mb-3">
+								<span class="input-group-text" id="basic-addon1"><i class="far fa-envelope"></i></span>
+								<input type="email" class="form-control" id="EmailUsuario" aria-describedby="emailHelp" value="{{usuario.correo}}" disabled>
+							</div>
+							
 						</div>
-						<footer>
-							<a href="/generic" class="button alt">Learn More</a>
-						</footer>
-					</article>
-				</div>
-				<a href="#two" class="more">Learn More</a>
-			</section>
-
-		<!-- Two -->
-			<section id="two" class="wrapper post bg-img" data-bg="banner5.jpg">
-				<div class="inner">
-					<article class="box">
-						<header>
-							<h2>Mus elit a ultricies at</h2>
-							<p>12.21.2016</p>
-						</header>
-						<div class="content">
-							<p>Scelerisque enim mi curae erat ultricies lobortis donec velit in per cum consectetur purus a enim platea vestibulum lacinia et elit ante scelerisque vestibulum. At urna condimentum sed vulputate a duis in senectus ullamcorper lacus cubilia consectetur odio proin sociosqu a parturient nam ac blandit praesent aptent. Eros dignissim mus mauris a natoque ad suspendisse nulla a urna in tincidunt tristique enim arcu litora scelerisque eros suspendisse.</p>
+						<div class="mb-3">
+							<label for="exampleInputPassword1" class="form-label"><strong>Nombre</strong></label>
+							<div class="input-group mb-3">
+								<span class="input-group-text" id="basic-addon1"><i class="fas fa-signature"></i></span>
+								<input type="text" class="form-control" id="NombreUsuario" value="{{usuario.nombre}}">
+							</div>
+							
 						</div>
-						<footer>
-							<a href="/generic" class="button alt">Learn More</a>
-						</footer>
-					</article>
+						<input type="hidden" id="id_usuario" value="{{usuario.uid}}">
+						<input type="hidden" id="rol_usuario" value="{{usuario.rol}}">
+						<button type="button" id="btnGDusu" class="btn btn-outline-dark"> Guardar </button>
+					</form>
 				</div>
-				<a href="#three" class="more">Learn More</a>
-			</section>
+			</div>
 
-		<!-- Three -->
-			<section id="three" class="wrapper post bg-img" data-bg="banner4.jpg">
-				<div class="inner">
-					<article class="box">
-						<header>
-							<h2>Varius a cursus aliquet</h2>
-							<p>11.11.2016</p>
-						</header>
-						<div class="content">
-							<p>Scelerisque enim mi curae erat ultricies lobortis donec velit in per cum consectetur purus a enim platea vestibulum lacinia et elit ante scelerisque vestibulum. At urna condimentum sed vulputate a duis in senectus ullamcorper lacus cubilia consectetur odio proin sociosqu a parturient nam ac blandit praesent aptent. Eros dignissim mus mauris a natoque ad suspendisse nulla a urna in tincidunt tristique enim arcu litora scelerisque eros suspendisse.</p>
-						</div>
-						<footer>
-							<a href="/generic" class="button alt">Learn More</a>
-						</footer>
-					</article>
-				</div>
-				<a href="#four" class="more">Learn More</a>
-			</section>
+			<hr>
 
-		<!-- Four -->
-			<section id="four" class="wrapper post bg-img" data-bg="banner3.jpg">
-				<div class="inner">
-					<article class="box">
-						<header>
-							<h2>Luctus blandit mi lectus in nascetur</h2>
-							<p>10.30.2016</p>
-						</header>
-						<div class="content">
-							<p>Scelerisque enim mi curae erat ultricies lobortis donec velit in per cum consectetur purus a enim platea vestibulum lacinia et elit ante scelerisque vestibulum. At urna condimentum sed vulputate a duis in senectus ullamcorper lacus cubilia consectetur odio proin sociosqu a parturient nam ac blandit praesent aptent. Eros dignissim mus mauris a natoque ad suspendisse nulla a urna in tincidunt tristique enim arcu litora scelerisque eros suspendisse.</p>
-						</div>
-						<footer>
-							<a href="/generic" class="button alt">Learn More</a>
-						</footer>
-					</article>
+
+			<div class="row mt-3" >
+				<div class="col-lg-4 col-sm-6 pt-5">
+					<div class="row"><h6 style="color:blueviolet">Password</h6></div>
+					<div class="row"><p>Cambiar tu password tambien te hara cerrar sesion.</p></div>
+					<div class="row"><p>Ten en cuenta que si olvidas tu contraseña tendras que contactar al Administrador.</p></div>
 				</div>
-			</section>
+				<div class="col-lg-4 col-sm-6 pt-5">
+					<form>
+						<div class="mb-3">
+							<label for="exampleInputPassword1" class="form-label"><strong>Nuevo Password</strong></label>
+							<div class="input-group mb-3">
+								<span class="input-group-text" id="basic-addon1"><i class="fas fa-key"></i></span>
+								<input type="password" class="form-control" id="password_nuevo" placeholder="Captura el nuevo password">
+							</div>
+							
+						</div>
+						<div class="mb-3">
+							<label for="exampleInputPassword1" class="form-label"><strong>Confirma el nuevo password</strong></label>
+							<div class="input-group mb-3">
+								<span class="input-group-text" id="basic-addon1"><i class="fas fa-key"></i></span>
+								<input type="password" class="form-control" id="password_confirma" placeholder="Captura el nuevo password de nuevo">
+							</div>
+						</div>
+						<button type="button" id="btnMPUsu" class="btn btn-outline-dark"> Modificar Password</button>
+					</form>
+				</div>
+			</div>
+
+
+
+		</div>
+		
 
 		<!-- Footer -->
 		{{> footer}}

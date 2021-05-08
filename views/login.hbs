@@ -17,7 +17,8 @@
 
      <script type="text/javascript">    
 
-        const url = 'https://restserver-pastizeta.herokuapp.com/api/auth/login';
+        const urlProd = 'https://restserver-pastizeta.herokuapp.com/api/auth/login';
+        const url = 'http://localhost:8080/api/auth/login';
 
         var btnLogin = document.getElementById("btnLogin");
         
@@ -42,8 +43,9 @@
 
                 if(respuesta.ok){
                     let respErr = await respuesta.json();
-                    //localStorage.setItem('x-token',respErr.token);
-                    window.location="/home?apikey=" +respErr.token;
+                    localStorage.setItem('x-token',respErr.token);
+                    localStorage.setItem('sessionID',respErr.sesion);
+                    window.location="/home?apikey=" + respErr.token + '&SSID=' + respErr.sesion;
                 }else{
                     let respErr = await respuesta.json();
 

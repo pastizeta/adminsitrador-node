@@ -23,20 +23,29 @@
                 let SSID = localStorage.getItem('sessionID');
 				let token = localStorage.getItem('x-token');
                 const URLPROD = 'https://restserver-pastizeta.herokuapp.com/api'
-                const URL = 'http://localhost:8080/api';
+                let URL = 'http://localhost:8080/api';
 
 
 				//funciones para links
 				$(link_productos).on('click',function(){
+                   
 					window.location="/productos?apikey=" + token + '&SSID=' + SSID;
+                     $('.nav-link').removeClass('active'); 
+                    $(this).addClass('active');
 				});
 
 				$(link_catego).on('click',function(){
+                    
 					window.location="/categorias?apikey=" + token + '&SSID=' + SSID;
+                     $('.nav-link').removeClass('active'); 
+                     $(this).addClass('active');
 				});
 
                 $(link_inicio).on('click',function(){
+                    
 					window.location="/home?apikey=" + token + '&SSID=' + SSID;
+                     $('.nav-link').removeClass('active'); 
+                     $(this).addClass('active');
 				});
                 
 
@@ -51,7 +60,7 @@
 					localStorage.removeItem( 'sessionID' );
 					localStorage.removeItem( 'x-token' );
 
-					window.location.replace('/');
+					window.location.replace('/login');
 				});
 
 

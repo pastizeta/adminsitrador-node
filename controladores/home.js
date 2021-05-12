@@ -9,6 +9,8 @@ const redireccionaHome= (req = request,res = response) =>{
           titulo:'Administrador || Home || MoraBoutiqueMX'
         });
     }else{
+      //res.sendFile(path.join(__dirname, '../views', 'login.hbs'));
+      //res.sendFile('/login');
       res.sendFile(path.join(__dirname, '../public', '404.html'));
     }
 }

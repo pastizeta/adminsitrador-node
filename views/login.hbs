@@ -132,9 +132,9 @@
                         window.location="/home?apikey=" + respErr.token + '&SSID=' + respErr.sesion;
                     }else{
                         let respErr = await respuesta.json();
-
+                        let div_mensaje = $('.mensaje');
                         mandaMensaje('unsuccess');
-                        div_mensaje.html(respErr.errors[0].msg);
+                        div_mensaje.html(respErr.msg);
                     }
                 }catch (err) {
                     console.log("Error al enviar el informacion del login: " + err.message);

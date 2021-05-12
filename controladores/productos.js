@@ -9,6 +9,9 @@ const redireccionaProd= (req = request,res = response) =>{
           titulo:'Administrador || Productos || MoraBoutiqueMX'
         });
     }else{
+      //res.sendFile(path.join(__dirname, '../public', '404.html'));
+      //res.sendFile(path.join(__dirname, '../views', '/login'));
+      //res.sendFile('/login');
       res.sendFile(path.join(__dirname, '../public', '404.html'));
     }
 }

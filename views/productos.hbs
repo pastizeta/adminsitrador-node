@@ -13,6 +13,7 @@
 				let limitexpagina = 6;
 				let desde_art = 0;
 				let respuesta;
+				let arr_catego_sel = [];
 
 				const getProductos = async(limite,desde,busqueda="0",criterio = '') => {
 
@@ -63,6 +64,50 @@
 						return;
 					}
 					
+				}
+
+				//se pinta select categorias
+				const pintaSelectCategorias =async ()=>{
+
+					const respCategorias = await fetch(`${url}/categorias`);
+					
+					let total_catego = 0;
+					let html = '';
+					let sel_categoria = $('#sel_categoria');
+
+					if (respCategorias.ok){
+						
+						categorias = await respCategorias.json();
+						total_catego = categorias.total;
+						arr_catego_sel = categorias.categorias; 
+
+					}else{
+						let respErr = await respuesta.json();
+						alert(respErr);
+						return;
+					}
+
+					html=`<option id="0" value="0">Seleccionar...</option>`
+					arr_catego_sel.forEach((reg) =>{
+						html+=`<option class="opt_categoria" id="${reg._id}" value="${reg._id}">${reg.nombre}</option>`
+					})
+
+					sel_categoria.html(html);
+
+				}
+
+				//se pinta select subcategorias
+				const pintaSelectSubCategoria= (arr_sub_catego)=>{
+					let html = '';
+					let sel_sub_catego = $('#sel_subcategoria')
+
+					html = `<option id="0" value="0">Seleccionar...</option>`
+					if(arr_sub_catego.length > 0){
+						arr_sub_catego.forEach((reg)=>{
+							html+= `<option id="${reg._id}" value="${reg._id}">${reg.nombre}</option>`
+						});	
+					}
+					sel_sub_catego.html(html);
 				}
 
 				const pintaProductos = async(prod_array,paginas,limite,desde,busqueda,criterio = '') => {
@@ -131,7 +176,7 @@
 
 												+ pintaCategorias(true,producto.categoria._id,producto.subcategoria._id,arr_catego,producto._id) +
 
-												`<a href="#" class="btn btn-primary btnModProd" Id="${producto._id}">Guardar</a>
+												`<a href="#" class="btn btn-success btnModProd" Id="${producto._id}">Guardar</a>
 											</form>
 										</div>
 									</div>
@@ -350,8 +395,156 @@
 					}
 
 				})
+				
+				$('#sel_categoria').on('change',function(){
+					let id_option =$(this).val();
+					let arrsubcatego = [];
+					
+					//buscar subcategorias en array por id categoria
+					if(id_option != '0'){
+						objCategorias = arr_catego_sel.find(element => element._id ===  id_option)
+						arrsubcatego = objCategorias.subcategorias;
+					}
+					pintaSelectSubCategoria(arrsubcatego);
+
+				})
+				
+				$('#btnAProd').on('click',async function(){
+					
+					let token = localStorage.getItem('x-token');
+					const ctrl_file = $('#file_prod');
+					let div_mensaje = $('.mensaje');
+
+					//se validan campos
+
+					if($('#txtNombre').val() == ''){
+						alert('Debes ingresar el nombre del producto');
+						return;
+					}
+
+					if($('#file_prod').get(0).files.length === 0){
+						alert('Debes seleccionar una imagen para tu producto');
+						return;
+					}
+
+					if($('#txtPrecio').val() == '' || isNaN($('#txtPrecio').val())){
+						alert('El precio debe ser un número y no debe estar vacio');
+						return;
+					}
+
+					if($('#sel_categoria').val() == '0' || $('#sel_categoria').val()== undefined){
+						alert('Debes elegir una categoria para tu producto');
+						return;
+					}
+
+					if($('#sel_subcategoria').val() == '0' || $('#sel_subcategoria').val()== undefined){
+						alert('Debes elegir una subcategoria para tu producto');
+						return;
+					}
+
+					if($('#sel_subcategoria').val() == ''){
+						alert('Debes ingresar una descripcion para tu producto');
+						return;
+					}
+
+					//se obtiene datos de la interfaz
+					const data = {
+						"nombre": $('#txtNombre').val(),
+						"precio": $('#txtPrecio').val(),
+						"categoria":$('#sel_categoria').val(),
+						"subcategoria":$('#sel_subcategoria').val(),
+						"descripcion":$('#txtDescr').val()
+					}
+
+					 $(this).prop("disabled", true);
+					 $(this).html(
+						`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Cargando...`
+					 );
+
+					respAgregaProd = await fetch(`${url}/productos/`,{
+													method: 'POST',
+													headers: {
+														'Content-Type': 'application/json;charset=utf-8',
+														'x-token' : token
+													},
+													body: JSON.stringify(data)
+												})
+					if(respAgregaProd.ok){
+						respJSON = await respAgregaProd.json();
+
+					//se valida si hay algo en el input para actualizar imagen
+					if( ctrl_file[0].files[0] ){
+
+						let formData = new FormData();
+						formData.append('archivo',ctrl_file[0].files[0]);
+
+						try{
+							const respPutIMG = await fetch(`${url}/uploads/productos/${respJSON.producto._id}`,{
+															method: 'PUT',
+															body: formData
+														})
+							if(respPutIMG.ok){
+
+								mandaMensaje('success');
+								div_mensaje.html('Producto Agregado');
+
+								await getProductos(limitexpagina,desde_art,"0");
+								await pintaSelectCategorias();
+								$('.items_prod').fadeOut(2000);
+								$('#txtNombre').val('');
+								$('#txtPrecio').val('');
+								$('#sel_categoria').val(0);
+								$('#sel_subcategoria').val(0);
+								$('#txtDescr').val('');
+								$('#file_prod').val('');
+							}else{
+								respJSON = await respPutIMG.json();
+								mandaMensaje('unsuccess');
+								div_mensaje.html(respJSON.msg);
+								$('.items_prod').fadeOut(2000);
+								$('#txtNombre').val('');
+								$('#txtPrecio').val('');
+								$('#sel_categoria').val(0);
+								$('#sel_subcategoria').val(0);
+								$('#txtDescr').val('');
+								$('#file_prod').val('');
+							}
+						}catch(err){
+							mandaMensaje('unsuccess');
+							div_mensaje.html(err);
+							$('.items_prod').fadeOut(2000);
+							$('#txtNombre').val('');
+							$('#txtPrecio').val('');
+							$('#sel_categoria').val(0);
+							$('#sel_subcategoria').val(0);
+							$('#txtDescr').val('');
+							$('#file_prod').val('');
+					}
+					}
+					}else{
+						respJSON = await respAgregaProd.json();
+						mandaMensaje('unsuccess');
+                        div_mensaje.html(respJSON.msg);
+						$('.items_prod').fadeOut(2000);
+						$('#txtNombre').val('');
+						$('#txtPrecio').val('');
+						$('#sel_categoria').val(0);
+						$('#sel_subcategoria').val(0);
+						$('#txtDescr').val('');
+						$('#file_prod').val('');
+					}
+
+					$(this).prop("disabled", false);
+					$(this).html(
+						`Agregar`
+					);
+
+				})
+				
+				
 				//al cargar la pagina de productos
 				const productos = await getProductos(limitexpagina,desde_art,"0");
+				await pintaSelectCategorias();
 			})
 		</script>
 
@@ -364,10 +557,56 @@
 			<div style="display: none;" class="mensaje alert" role="alert"></div>
 
 			<div class="row pt-5">
-				<div class="col-lg-4 col-md-12 col-sm-12 col-xs-12">
-					<h1>seccion</h1>
+				<div class="col-lg-3 col-md-12 col-sm-12 col-xs-12">
+					
+					<div class="row p-5">
+						
+						<h4>Agregar Producto</h4>
+						<form id="frm_prod">
+							<div class="mb-3 col-12">
+								<label for="txtNombre" class="form-label">Nombre</label>
+								<input type="text" class="form-control" id="txtNombre">
+							</div>
+							<div class="mb-3 col-12">
+								<label for="sel_categoria" class="form-label">Imagen</label>
+								<input type="file" class="form-control" id="file_prod">
+							</div>
+							<div class="mb-3 col-12">
+								<label for="txtPrecio" class="form-label">Precio</label>
+								<div class="input-group mb-3">
+									<span class="input-group-text">$</span>
+									<input type="text" class="form-control" id="txtPrecio" aria-label="Monto (Pesos)">
+									<span class="input-group-text">.00</span>
+								</div>
+							</div>
+							
+							<div class="mb-3 col-12">
+								<label for="sel_categoria" class="form-label">Categoria</label>
+								<select class="form-select" name="sel_categoria" id="sel_categoria">
+									
+								</select>
+							</div>
+							<div class="mb-3 col-12">
+								<label for="sel_subcategoria" class="form-label">SubCategoria</label>
+								<select class="form-select" name="sel_subcategoria" id="sel_subcategoria">
+									
+								</select>
+							</div>
+							<div class="input-group pb-5">
+								<span class="input-group-text">Descripción</span>
+								<textarea class="form-control" aria-label="Descripción" id="txtDescr"></textarea>
+							</div>
+
+							<div class="input-group">
+								
+								<button type="button" class="btn btn-success" id="btnAProd">Agregar <span class="items_prod"></span></button>
+							</div>
+							
+							
+						</form>
+					</div>
 				</div>
-				<div class="col-lg-8 col-md-12 col-sm-12 col-xs-12">
+				<div class="col-lg-9 col-md-12 col-sm-12 col-xs-12">
 					<div class="row">
 						<div class="col-lg-6 col-md-6 col-sm-4 col-xs-4">
 							<input id="textBusqueda"  type="text" class="form-control form-control-lg" placeholder="Buscar...">

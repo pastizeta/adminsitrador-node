@@ -6,9 +6,372 @@
 
 		<!-- Header -->
 		{{> navbar}}
+
+		<script type="text/javascript">
+			$(document).ready(async()=>{
+
+
+
+				let url = 'https://6944-187-244-127-201.ngrok.io/api';
+				let arr_subcategorias = [];
+
+				const getCategorias = async() =>{
+					const respCategorias = await fetch(`${url}/categorias/?limite=100&desde=0`);
+
+					const json = await respCategorias.json();
+
+					if(respCategorias.ok){
+
+						pintaTablaCat(json.categorias);
+						return;
+
+					}else{
+						alert(`Error -> al cargar categorias, ${json.msg}`);
+						return;
+					}
+				}
+
+				const getSubCategorias = async() =>{
+
+					const respSubcategorias = await fetch(`${url}/subcategorias/?limite=100&desde=0`);
+					const json = await respSubcategorias.json();
+
+					if(respSubcategorias.ok){
+
+						pintaTablaSubCat(json.subcategorias);
+						return;
+
+					}else{
+						alert(`Error -> al cargar subcategorias, ${json.msg}`);
+						return;
+					}
+
+				}
+				const pintaTablaCat = (arrCat) =>{
+				
+					const tbody_categorias = $('#tbody_categorias');
+					let html='';
+					tbody_categorias.html(html);
+
+					arrCat.forEach( (reg) =>{
+
+						html += `<tr>
+									<td>${reg.nombre}</td>
+									<td>${reg.usuario.nombre}</td>
+									<td>
+								`+
+								 		f_obten_subcat_html(reg.subcategorias)
+								 +`	</td>
+									<td align="center"> 
+										<span><i class="fas fa-trash borrarCat" id="${reg._id}" ></i></span>
+										
+									</td>
+								</tr>`
+
+					})
+
+					tbody_categorias.html(html);
+				}
+
+				const f_obten_subcat_html =(arr_subcatego)=>{
+					let html="<table>";
+
+					arr_subcatego.forEach((subreg) =>{
+						html += `<tr>
+										<td>
+											${subreg.nombre}
+										</td>
+								</tr>`
+					})
+					html += `</table>`
+					return html;
+				}
+				
+				const pintaTablaSubCat = (arrSubCat) =>{
+				
+					const tbody_subcategorias = $('#tbody_subcategorias');
+					const body_acordion = $('#body_acordion');
+					let html='';
+					let html_acordion='';
+					tbody_subcategorias.html(html);
+					
+					html_acordion = `<ul style="list-style: none;column-count:2;">`
+
+					arrSubCat.forEach( (reg) =>{
+
+						html += `<tr>
+									<td>${reg.nombre}</td>
+									<td>${reg.usuario.nombre}</td>
+									<td align="center"> 
+										<span><i class="fas fa-trash borrarSubCat" id="${reg._id}" ></i></span>
+									</td>
+								</tr>`
+
+						html_acordion += `	<li>
+												<input class="subCheck" type="checkbox" name="${reg._id}" id="${reg._id}" value="">
+												<label class="" for="${reg._id}">${reg.nombre}</label>
+											</li>
+										`
+
+					})
+					
+					html_acordion += `</ul>`
+					body_acordion.html(html_acordion);
+					tbody_subcategorias.html(html);
+				}
+			
+				$('#btnASubCat').on('click',async() =>{
+					
+					const l_nombre_sub_cat = $('#nombreSubCat').val();
+					let token = localStorage.getItem('x-token');
+					let div_mensaje = $('.mensaje');
+
+					if( l_nombre_sub_cat == '' || Number(l_nombre_sub_cat) || l_nombre_sub_cat == undefined || l_nombre_sub_cat.length > 15 ){
+						 mandaMensaje('unsuccess');
+						 div_mensaje.html('SubCategorias - El nombre es incorrecto. ');
+						 return;
+					}
+
+					let data = {
+						"nombre": l_nombre_sub_cat
+					}
+
+					const respAsubCat = await fetch(`${url}/subcategorias/`,{
+														method:'POST',
+														 headers: {
+															'Content-Type': 'application/json;charset=utf-8',
+															'x-token': token
+														},
+														body: JSON.stringify(data)
+													})
+					json = await respAsubCat.json();
+
+					if( respAsubCat.ok ){
+						mandaMensaje('success');
+                        div_mensaje.html('Subcategoria Agregada');
+
+						//vuelve a pintar las subcategorias para actualizar la lista
+						await getSubCategorias();
+					}else{
+						mandaMensaje('unsuccess');
+                        div_mensaje.html(json.msg);
+					}
+
+				})
+				
+				//Agregar Categoria
+				$('#btnACat').on('click',async() =>{
+					
+					const l_nombre_cat = $('#nombreCat').val();
+					let token = localStorage.getItem('x-token');
+					let div_mensaje = $('.mensaje');
+					
+
+					if( l_nombre_cat == '' || Number(l_nombre_cat) || l_nombre_cat == undefined || l_nombre_cat.length > 15 ){
+						 mandaMensaje('unsuccess');
+						 div_mensaje.html('Categorias - El nombre es incorrecto. ');
+						 return;
+					}
+					if(arr_subcategorias.length == 0){
+						 mandaMensaje('unsuccess');
+						 div_mensaje.html('Categorias - Debes elegir al menos una SubCategoria. ');
+						 return;
+					}
+
+					let data = {
+						"nombre": l_nombre_cat,
+						"subcategorias":arr_subcategorias
+					}
+
+					const respACat = await fetch(`${url}/categorias/`,{
+														method:'POST',
+														 headers: {
+															'Content-Type': 'application/json;charset=utf-8',
+															'x-token': token
+														},
+														body: JSON.stringify(data)
+													})
+					json = await respACat.json();
+
+					if( respACat.ok ){
+						mandaMensaje('success');
+                        div_mensaje.html('Categoria Agregada');
+
+						//vuelve a pintar las categorias para actualizar la lista
+						await getCategorias();
+					}else{
+						mandaMensaje('unsuccess');
+                        div_mensaje.html(json.msg);
+					}
+
+				})
+				
+				
+				//evento checkboxes
+				$('#body_acordion').on('click','.subCheck', function(){
+					let id_check = $(this).attr('id');
+
+					if(arr_subcategorias.find(element => element == id_check)){
+						let index = arr_subcategorias.indexOf(id_check);
+						arr_subcategorias.splice(index,1);
+					}else{
+						arr_subcategorias.push(id_check);
+					}
+					
+					
+				});
+				
+				//borrar Categoria
+				$('#tbody_categorias').on('click','.borrarCat',async function(){
+					let id_cat = $(this).attr('id');
+					let div_mensaje = $('.mensaje');
+					let token = localStorage.getItem('x-token');
+
+					if (confirm('Esta seguro de borrar la Categoria, esta accion no se puede deshacer')){
+						respDeletCat = await fetch(`${url}/categorias/${id_cat}`,{
+													method: 'DELETE',
+													headers: {
+														'Content-Type': 'application/json;charset=utf-8',
+														'x-token' : token
+													}
+												})
+						if(respDeletCat.ok){
+							respJSON = await respDeletCat.json();
+							mandaMensaje('success');
+							div_mensaje.html('Categoria - Borrada Con Exito');
+
+							//vuelve a pintar las categorias para actualizar la lista
+							await getCategorias();
+						}else{
+							respJSON = await respDeletCat.json();
+							mandaMensaje('unsuccess');
+							div_mensaje.html(respJSON.msg);
+						}
+					}else{
+						mandaMensaje('success');
+						div_mensaje.html('Categoria - No se realizo ningun cambio');
+					}
+					
+				})
+				
+				//borrar SubCataegoria
+				$('#tbody_subcategorias').on('click','.borrarSubCat',async function(){
+					let id_subcat = $(this).attr('id');
+					let div_mensaje = $('.mensaje');
+					let token = localStorage.getItem('x-token');
+
+					if (confirm('Esta seguro de borrar la SubCategoria, esta accion no se puede deshacer')){
+						respDeletsubCat = await fetch(`${url}/subcategorias/${id_subcat}`,{
+													method: 'DELETE',
+													headers: {
+														'Content-Type': 'application/json;charset=utf-8',
+														'x-token' : token
+													}
+												})
+						if(respDeletsubCat.ok){
+							respJSON = await respDeletsubCat.json();
+							mandaMensaje('success');
+							div_mensaje.html('SubCategoria - Borrada Con Exito');
+
+							//vuelve a pintar las categorias para actualizar la lista
+							await getSubCategorias();
+						}else{
+							respJSON = await respDeletsubCat.json();
+							mandaMensaje('unsuccess');
+							div_mensaje.html(respJSON.msg);
+						}
+					}else{
+						mandaMensaje('success');
+						div_mensaje.html('SubCategoria - No se realizo ningun cambio');
+					}
+					
+				})
+				//se cargan subcategorias
+				getSubCategorias();
+				getCategorias();
+			})	
+		</script>
 		
         <div class="container">
-            <h1>Categorias</h1>
+
+			<div style="display: none;" class="mensaje alert" role="alert"></div>
+
+            <div class="row mb-5 mt-5">
+				<div class="col-lg-4 col-md-6 col-sm-12 col-xs-12 pr-4">
+					<h3>Categorias</h3>
+					<div class="mb-3">
+						<label for="nombreCat" class="form-label" style="color: black;">Nombre</label>
+						<div class="input-group mb-3">
+							<span class="input-group-text" id="basic-addon1"><i class="fas fa-pen"></i></span>
+							<input type="text" class="form-control" name="nombreCat" id="nombreCat">
+						</div>
+
+						<div class="accordion pb-5" id="accordionExample">
+							<div class="accordion-item">
+								<h2 class="accordion-header" id="headingOne">
+								<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-controls="collapseOne">
+									SubCategorias
+								</button>
+								</h2>
+								<div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+								<div class="accordion-body" id="body_acordion">
+									
+								</div>
+								</div>
+							</div>
+							
+						</div>
+						<button id="btnACat" class="btn btn-success">Agregar</button>
+                    
+               		</div>
+				</div>
+				<div class="col-lg-8 col-md-6 col-sm-12 col-xs-12">
+					<table id="tbl_categorias" class="table" width="100%">
+						<thead>
+							<tr>
+								<th>Nombre</th>
+								<th>Usuario</th>
+								<th>SubCategorias</th>
+								<th align="center">Accion</th>
+							</tr>
+						</thead>
+						<tbody id="tbody_categorias">
+							
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<hr>
+
+			 <div class="row">
+				<div class="col-lg-4 col-md-6 col-sm-12 col-xs-12 pr-4">
+					<h3>Subcategorias</h3>
+					<div class="mb-3">
+						<label for="nombreSubCat" class="form-label" style="color: black;">Nombre</label>
+						<div class="input-group mb-3">
+							<span class="input-group-text" id="basic-addon1"><i class="fas fa-pen"></i></span>
+							<input type="text" class="form-control" name="nombreSubCat" id="nombreSubCat">
+						</div>
+					</div>
+					<button id="btnASubCat" class="btn btn-success">Agregar</button>
+				</div>
+				<div class="col-lg-8 col-md-6 col-sm-12 col-xs-12">
+					<table id="tbl_sub_categorias" class="table" width="100%">
+						<thead>
+							<tr>
+								<th>Nombre</th>
+								<th>Usuario</th>
+								<th>Accion</th>
+							</tr>
+						</thead>
+						<tbody id="tbody_subcategorias">
+							
+						</tbody>
+					</table>
+				</div>
+			</div>
+
         </div>
 		
 

@@ -22,7 +22,8 @@
         }
     </style>
 </head>
-<body style="background-image:url('https://image.freepik.com/vector-gratis/fondo-abstracto-liquido-degradado_23-2148923272.jpg');">
+<body style="background-image:url('https://fondosmil.com/fondo/6454.jpg');background-repeat: no-repeat; background-size: cover;">
+{{!-- <body style="background-color:#2A2A2A"></body> --}}
     <h4 id ="aviso"></h4>
 
     
@@ -75,7 +76,7 @@
             $('#row-login').height(height);
 
             const urlProd = 'https://restserver-pastizeta.herokuapp.com/api/auth/login';
-            const url = 'http://localhost:8080/api/auth/login';
+            const url = 'https://6944-187-244-127-201.ngrok.io/api/auth/login';
 
 
             const desapareceDiv = ()=>{
@@ -106,7 +107,7 @@
 
             const btnLogin = document.getElementById("btnLogin");
         
-            btnLogin.addEventListener('click',async() =>{
+            $('#btnLogin').on('click',async() =>{
 
                 const correo = document.getElementById('email').value
                 const password = document.getElementById('password').value

@@ -9,8 +9,8 @@
 		
 		<script type="text/javascript">
 			$(document).ready( async() => {
-				let url = 'http://localhost:8080/api';
-				let limitexpagina = 8;
+				let url = 'https://6944-187-244-127-201.ngrok.io/api';
+				let limitexpagina = 6;
 				let desde_art = 0;
 				let respuesta;
 
@@ -94,12 +94,21 @@
 							}else{
 								chk_disponible = '';
 							} 
-
-							html+= `<div class="col-lg-3 col-md-6 col-xs-12 col-sm-12 pt-3">
+							
+							if(producto.img == 'undefined' || producto.img == '' || producto.img == undefined){
+								producto.img = 'https://res.cloudinary.com/api-pastizeta/image/upload/v1620943698/no-image_ccq42m.jpg';
+							}
+							
+							html+= `<div class="col-lg-4 col-md-6 col-xs-12 col-sm-12 pt-3">
 									<div class="card">
-										<img src="https://i.picsum.photos/id/45/200/300.jpg?hmac=mW2p9asL-scUozua98sWn1c03g7CYv7w7IIHwnFp4cM" width="200" height="300" class="card-img-top" alt="...">
+										<img id="img_${producto._id}" src="${producto.img}" width="200" height="300" class="card-img-top" alt="...">
 										<div class="card-body">
 											<form>
+												
+												<div class="mb-3">
+													<input class="form-control fileInput" type="file" id="file_${producto._id}" data_id=${producto._id}>
+												</div>
+
 												<div class="input-group mb-2">
 													<span class="input-group-text" id="basic-addon1"><i class="fas fa-pen"></i></span>
 													<input type="text" class="form-control" id="nombre_${producto._id}" value="${producto.nombre}">
@@ -118,7 +127,7 @@
 												<div class="form-check form-switch">
 													<input class="form-check-input" type="checkbox" id="disponible_${producto._id}" ${chk_disponible} >
 													<label class="form-check-label" for="disponible_${producto._id}"> Disponible </label>
-												</div>`
+												</div>`	
 
 												+ pintaCategorias(true,producto.categoria._id,producto.subcategoria._id,arr_catego,producto._id) +
 
@@ -236,6 +245,7 @@
 					const id = $(this).attr('id');
 					//se obtiene controles del id
 					const ctrl_nombre = $(`#nombre_${id}`).val();
+					const ctrl_file = $(`#file_${id}`);
 					const ctrl_descripcion = $(`#descripcion_${id}`).val();
 					const ctrl_precio = $(`#precio_${id}`).val();
 					let ctrl_disponible = $(`#disponible_${id}`)[0].checked;
@@ -282,6 +292,32 @@
                         div_mensaje.html(respJSON.msg);
 					}
 
+					//se valida si hay algo en el input para actualizar imagen
+					if( ctrl_file[0].files[0] ){
+
+						let formData = new FormData();
+						formData.append('archivo',ctrl_file[0].files[0]);
+
+						try{
+							const respPutIMG = await fetch(`${url}/uploads/productos/${id}`,{
+															method: 'PUT',
+															body: formData
+														})
+							if(respPutIMG.ok){
+
+								mandaMensaje('success');
+								div_mensaje.html('Producto Actualizado');
+							}else{
+								respJSON = await respPutIMG.json();
+								mandaMensaje('unsuccess');
+								div_mensaje.html(respJSON.msg);
+							}
+						}catch(err){
+							mandaMensaje('unsuccess');
+							div_mensaje.html(err);
+						}
+					}
+
 				})
 
 				//buscar procuctos al cambiar el texto del inpunt
@@ -297,6 +333,23 @@
 					//alert(valor_buscado);
 				})
 
+
+				$('#row_prod').on('change','.fileInput', async function(){
+
+					const data_id = $(this).attr('data_id');
+					const file_input = $(this);
+
+					if( file_input[0].files[0] ){
+
+						const primerArchivo = file_input[0].files[0];
+						const objectURL = URL.createObjectURL(primerArchivo);
+						const filePreview = $(`#img_${data_id}`);
+
+						filePreview[0].src = objectURL;
+							
+					}
+
+				})
 				//al cargar la pagina de productos
 				const productos = await getProductos(limitexpagina,desde_art,"0");
 			})
@@ -316,11 +369,11 @@
 				</div>
 				<div class="col-lg-8 col-md-12 col-sm-12 col-xs-12">
 					<div class="row">
-						<div class="col-lg-6 col-md-8 col-sm-8 col-xs-8">
+						<div class="col-lg-6 col-md-6 col-sm-4 col-xs-4">
 							<input id="textBusqueda"  type="text" class="form-control form-control-lg" placeholder="Buscar...">
 							<span><small>Busca productos por nombre</small></span>
 						</div>
-						<div class="col-lg-2 col-md-4 col-sm-4 col-xs-4">
+						<div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
 							<button type="button" class="btn btn-outline-success btn-lg" id="btnBP">Buscar</button>
 						</div>
 						

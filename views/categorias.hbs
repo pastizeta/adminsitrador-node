@@ -12,7 +12,8 @@
 
 
 
-				let url = 'https://restserver-pastizeta.herokuapp.com/api';
+				//let url = 'https://restserver-pastizeta.herokuapp.com/api';
+				let url = 'https://e14b-187-244-127-201.ngrok.io/api';
 				let arr_subcategorias = [];
 
 				const getCategorias = async() =>{
@@ -51,9 +52,15 @@
 				
 					const tbody_categorias = $('#tbody_categorias');
 					let html='';
+					let estado = '';
 					tbody_categorias.html(html);
 
 					arrCat.forEach( (reg) =>{
+						if(reg.estado == true){
+							estado = 'checked'
+						}else{
+							estado = ''
+						}
 
 						html += `<tr>
 									<td>${reg.nombre}</td>
@@ -63,7 +70,9 @@
 								 		f_obten_subcat_html(reg.subcategorias)
 								 +`	</td>
 									<td align="center"> 
-										<span><i class="fas fa-trash borrarCat" id="${reg._id}" ></i></span>
+										<div class="form-check form-switch">
+											<input class="form-check-input borrarCat" type="checkbox" id="${reg._id}" ${estado} nombre="${reg.nombre}">
+										</div>
 										
 									</td>
 								</tr>`
@@ -93,22 +102,34 @@
 					const body_acordion = $('#body_acordion');
 					let html='';
 					let html_acordion='';
+					let estado = '';
+					let habilitado = 'disabled';
 					tbody_subcategorias.html(html);
 					
 					html_acordion = `<ul style="list-style: none;column-count:2;">`
 
 					arrSubCat.forEach( (reg) =>{
 
+						if(reg.estado == true){
+							estado = 'checked'
+							habilitado = ''
+						}else{
+							estado = ''
+						}
+
 						html += `<tr>
 									<td>${reg.nombre}</td>
 									<td>${reg.usuario.nombre}</td>
 									<td align="center"> 
-										<span><i class="fas fa-trash borrarSubCat" id="${reg._id}" ></i></span>
+										
+										<div class="form-check form-switch">
+											<input class="form-check-input borrarSubCat" type="checkbox" id="${reg._id}" ${estado} nombre="${reg.nombre}">
+										</div>
 									</td>
 								</tr>`
 
 						html_acordion += `	<li>
-												<input class="subCheck" type="checkbox" name="${reg._id}" id="${reg._id}" value="">
+												<input class="subCheck" type="checkbox" name="${reg._id}" id="${reg._id}" value="" >
 												<label class="" for="${reg._id}">${reg.nombre}</label>
 											</li>
 										`
@@ -227,51 +248,71 @@
 					let div_mensaje = $('.mensaje');
 					let token = localStorage.getItem('x-token');
 
-					if (confirm('Esta seguro de borrar la Categoria, esta accion no se puede deshacer')){
-						respDeletCat = await fetch(`${url}/categorias/${id_cat}`,{
-													method: 'DELETE',
-													headers: {
-														'Content-Type': 'application/json;charset=utf-8',
-														'x-token' : token
-													}
-												})
-						if(respDeletCat.ok){
-							respJSON = await respDeletCat.json();
-							mandaMensaje('success');
-							div_mensaje.html('Categoria - Borrada Con Exito');
-
-							//vuelve a pintar las categorias para actualizar la lista
-							await getCategorias();
-						}else{
-							respJSON = await respDeletCat.json();
-							mandaMensaje('unsuccess');
-							div_mensaje.html(respJSON.msg);
-						}
+					let estado = false				    
+					if($(this).is(":checked")){
+						estado = true
 					}else{
-						mandaMensaje('success');
-						div_mensaje.html('Categoria - No se realizo ningun cambio');
+						estado = false
 					}
+					let data={
+						"estado": estado
+					}
+					respDeletCat = await fetch(`${url}/categorias/estado/${id_cat}`,{
+												method: 'PUT',
+												headers: {
+													'Content-Type': 'application/json;charset=utf-8',
+													'x-token' : token
+												},
+												body: JSON.stringify(data)
+											})
+					if(respDeletCat.ok){
+						respJSON = await respDeletCat.json();
+						//mandaMensaje('success');
+						//div_mensaje.html('Categoria - Borrada Con Exito');
+
+						//vuelve a pintar las categorias para actualizar la lista
+						await getCategorias();
+					}else{
+						respJSON = await respDeletCat.json();
+						mandaMensaje('unsuccess');
+						div_mensaje.html(respJSON.msg);
+					}
+					
 					
 				})
 				
 				//borrar SubCataegoria
-				$('#tbody_subcategorias').on('click','.borrarSubCat',async function(){
+				$('#tbody_subcategorias').on('change','.borrarSubCat',async function(){
 					let id_subcat = $(this).attr('id');
+					let nom_subcat = $(this).attr('nombre');
 					let div_mensaje = $('.mensaje');
 					let token = localStorage.getItem('x-token');
+					let estado = false;
 
-					if (confirm('Esta seguro de borrar la SubCategoria, esta accion no se puede deshacer')){
+					if($(this).is(":checked")){
+						estado = true
+					}else{
+						estado = false
+					}
+					let data={
+						"nombre": nom_subcat,
+						"estado": estado
+					}
+
+					
 						respDeletsubCat = await fetch(`${url}/subcategorias/${id_subcat}`,{
-													method: 'DELETE',
+													method: 'PUT',
 													headers: {
 														'Content-Type': 'application/json;charset=utf-8',
 														'x-token' : token
-													}
+													},
+													body: JSON.stringify(data)
+													
 												})
 						if(respDeletsubCat.ok){
 							respJSON = await respDeletsubCat.json();
-							mandaMensaje('success');
-							div_mensaje.html('SubCategoria - Borrada Con Exito');
+							//mandaMensaje('success');
+							//div_mensaje.html('SubCategoria - Cambios Con Exito');
 
 							//vuelve a pintar las categorias para actualizar la lista
 							await getSubCategorias();
@@ -280,10 +321,7 @@
 							mandaMensaje('unsuccess');
 							div_mensaje.html(respJSON.msg);
 						}
-					}else{
-						mandaMensaje('success');
-						div_mensaje.html('SubCategoria - No se realizo ningun cambio');
-					}
+
 					
 				})
 				//se cargan subcategorias

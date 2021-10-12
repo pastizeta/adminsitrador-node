@@ -10,7 +10,7 @@
 		<script type="text/javascript">
 			$(document).ready( async() => {
 				//let url = 'https://restserver-pastizeta.herokuapp.com/api';
-				let url = 'https://e14b-187-244-127-201.ngrok.io/api';
+				let url = 'https://7bdb-187-244-127-201.ngrok.io/api';
 				let limitexpagina = 6;
 				let desde_art = 0;
 				let respuesta;
@@ -236,7 +236,7 @@
 					let i_catego = 0;
 
 					html += '<div class="input-group mb-2">';
-						html+=`<select class="form-select" id="cmb_catego_${prod_id}" disabled>`;
+						html+=`<select class="form-select cmb_catego" id="cmb_catego_${prod_id}" disabled>`;
 						arr_catego.forEach( ( reg, index ) =>{
 
 							if(compara){
@@ -248,10 +248,10 @@
 									selected = '';
 								}
 							}else{
-								html +=`<option id="0" >Seleccionar...</option>`;
+								html +=`<option id="0" value="0">Seleccionar...</option>`;
 							}
 
-							html += `<option id="${reg._id}" ${selected}>
+							html += `<option id="${reg._id}" value="${reg._id}" ${selected}>
 										${reg.nombre}
 									</option>`
 						})
@@ -261,7 +261,7 @@
 					let arr_subcatego =arr_catego[i_catego].subcategorias;
 					//combo subcategoria.
 					html += '<div class="input-group mb-2">';
-						html+=`<select class="form-select" id="cmb_sub_catego_${prod_id}" disabled>`;
+						html+=`<select class="form-select cmb_subcatego" id="cmb_sub_catego_${prod_id}" disabled>`;
 						arr_subcatego.forEach( (reg) =>{
 
 							if(compara){
@@ -272,10 +272,10 @@
 									selected = '';
 								}
 							}else{
-								html +=`<option id="0" >Seleccionar...</option>`;
+								html +=`<option id="0" value="0">Seleccionar...</option>`;
 							}
 
-							html += `<option id="${reg._id}" ${selected}>
+							html += `<option id="${reg._id}" value="${reg._id}" ${selected}>
 														${reg.nombre}
 													</option>`
 						})

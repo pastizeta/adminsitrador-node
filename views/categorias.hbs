@@ -13,7 +13,7 @@
 
 
 				//let url = 'https://restserver-pastizeta.herokuapp.com/api';
-				let url = 'https://e14b-187-244-127-201.ngrok.io/api';
+				let url = 'https://7bdb-187-244-127-201.ngrok.io/api';
 				let arr_subcategorias = [];
 
 				const getCategorias = async() =>{
@@ -69,11 +69,17 @@
 								`+
 								 		f_obten_subcat_html(reg.subcategorias)
 								 +`	</td>
-									<td align="center"> 
-										<div class="form-check form-switch">
-											<input class="form-check-input borrarCat" type="checkbox" id="${reg._id}" ${estado} nombre="${reg.nombre}">
-										</div>
-										
+									<td align=""> 
+										<table>
+											<tr>
+												<td>
+													<div class="form-check form-switch">
+														<input class="form-check-input borrarCat" type="checkbox" id="${reg._id}" ${estado} nombre="${reg.nombre}">
+													</div>
+												</td>
+												<td><i class="fas fa-edit edit_cat" nombre="${reg.nombre}" id="${reg._id}"></i></td>
+											</tr>
+										</table>
 									</td>
 								</tr>`
 
@@ -120,11 +126,17 @@
 						html += `<tr>
 									<td>${reg.nombre}</td>
 									<td>${reg.usuario.nombre}</td>
-									<td align="center"> 
-										
-										<div class="form-check form-switch">
-											<input class="form-check-input borrarSubCat" type="checkbox" id="${reg._id}" ${estado} nombre="${reg.nombre}">
-										</div>
+									<td align=""> 
+										<table>
+											<tr>
+												<td>
+													<div class="form-check form-switch">
+														<input class="form-check-input borrarSubCat" type="checkbox" id="${reg._id}" ${estado} nombre="${reg.nombre}">
+													</div>
+												</td>
+												<td><i class="fas fa-edit edit_subcat" nombre="${reg.nombre}" id="${reg._id}"></i></td>
+											</tr>
+										</table>
 									</td>
 								</tr>`
 
@@ -324,6 +336,156 @@
 
 					
 				})
+				
+				//MOdal editar categoria
+				$('#tbody_categorias').on('click','.edit_cat',async function(){
+					let nombre_cat = $(this).attr('nombre');
+					let id_cat = $(this).attr('id');
+					let html_subcatego = '<ul style="list-style: none;column-count:2;">';
+					const respCategoria = await fetch(`${url}/categorias/${id_cat}`);
+					const respSubcategorias = await fetch(`${url}/subcategorias/?limite=100&desde=0`);
+					const json = await respCategoria.json();
+					const jsonSubCat = await respSubcategorias.json();
+
+					if(respCategoria.ok && respSubcategorias.ok){
+						let checked = '';
+
+						jsonSubCat.subcategorias.forEach((reg) =>{
+							
+							if(json.categoria.subcategorias.find(x => x._id == reg._id)){
+								checked='checked';
+							}
+							else{
+								checked = '';
+							}
+							html_subcatego += `	<li>
+													<input class="subCheckedit" type="checkbox" name="edit_${reg._id}" id="${reg._id}" value="" ${checked} >
+													<label class="" for="${reg._id}">${reg.nombre}</label>
+												</li>
+											 `
+						});
+						html_subcatego += '</ul>';
+
+						$('#body_subcategorias').html(html_subcatego);
+					}else{
+						alert(`Error -> al buscar categorias, ${json.msg}`);
+						return;
+					}
+
+					$('#editnomCat').val(nombre_cat);
+					$('#editidcat').val(id_cat);
+					$('#staticBackdropCat').modal("show");
+				})
+
+				//MOdal editar subcategoria
+				$('#tbody_subcategorias').on('click','.edit_subcat', function(){
+					let nombre_subcat = $(this).attr('nombre');
+					let id_subcat = $(this).attr('id');
+
+					$('#editnomSubCat').val(nombre_subcat);
+					$('#editidsubcat').val(id_subcat);
+					$('#staticBackdrop').modal("show");
+				})
+
+				//editar subcategori
+				$('#btnEditSubCat').on('click',async function(){
+					let token = localStorage.getItem('x-token');
+					let id_subcat = $('#editidsubcat').val();
+					let div_mensaje = $('.mensaje');
+
+					if($('#editnomSubCat').val() == ''){
+						alert('Debes ingresar un nombre para la subcategoria');
+						return;
+					}
+					if($('#editnomSubCat').val().length > 55){
+						alert('Los nombres no pueden ser tan largos (55)');
+						return;
+					}
+
+					let data = {
+						"nombre": $('#editnomSubCat').val()
+					}
+
+					const respESubCat = await fetch(`${url}/subcategorias/${id_subcat}`,{
+														method:'PUT',
+														 headers: {
+															'Content-Type': 'application/json;charset=utf-8',
+															'x-token': token
+														},
+														body: JSON.stringify(data)
+													})
+					json = await respESubCat.json();
+
+					if( respESubCat.ok ){
+						mandaMensaje('success');
+                        div_mensaje.html('SubCategoria Actualizada');
+
+						//vuelve a pintar las categorias para actualizar la lista
+						$('#staticBackdrop').modal("hide");
+						await getSubCategorias();
+						await getCategorias();
+					}else{
+						mandaMensaje('unsuccess');
+                        div_mensaje.html(json.msg);
+						$('#staticBackdrop').modal("hide");
+					}
+				})
+
+				//edita categoria
+				$('#btnEditCat').on('click',async function(){
+					let arr_subcategorias = [];
+					let token = localStorage.getItem('x-token');
+					let id_cat = $('#editidcat').val();
+					let div_mensaje = $('.mensaje');
+
+					//obtener arreglo de id subcategorias seleccionados
+					$("#body_subcategorias input[type=checkbox]:checked").each(function(){
+						arr_subcategorias.push($(this).attr('id'));
+					});
+					
+					if(arr_subcategorias.length == 0){
+						alert('Debes seleccionar al menos una subcategoria');
+						return;
+					}
+					if($('#editnomCat').val() == ''){
+						alert('La categoria debe tener nombre');
+					}
+
+					if($('#editnomCat').val().length > 55){
+						alert('El nombre no puede ser tan largo (55)');
+						return;
+					}
+				
+					let data={
+						"nombre":$('#editnomCat').val(),
+						"subcategorias":arr_subcategorias
+					}
+					
+					const respECat = await fetch(`${url}/categorias/${id_cat}`,{
+														method:'PUT',
+														 headers: {
+															'Content-Type': 'application/json;charset=utf-8',
+															'x-token': token
+														},
+														body: JSON.stringify(data)
+													})
+					json = await respECat.json();
+
+					if( respECat.ok ){
+						mandaMensaje('success');
+                        div_mensaje.html('Categoria Actualizada');
+
+						//vuelve a pintar las categorias para actualizar la lista
+						$('#staticBackdropCat').modal("hide");
+						await getSubCategorias();
+						await getCategorias();
+					}else{
+						mandaMensaje('unsuccess');
+                        div_mensaje.html(json.msg);
+						$('#staticBackdropCat').modal("hide");
+					}
+					//console.log(arr_subcategorias);
+				})
 				//se cargan subcategorias
 				getSubCategorias();
 				getCategorias();
@@ -411,7 +573,71 @@
 			</div>
 
         </div>
-		
+	
+		<!-- Modal Subcategorias-->
+		<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="staticBackdropLabel">Editar Subcategoria</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div id="modal-body" class="modal-body">
+				<div class="container">
+					<div class="row">
+						<label for="editnomSubCat" class="form-label" style="color: black;">Nombre</label>
+						<div class="input-group mb-3">
+							<span class="input-group-text" id="basic-addon1"><i class="fas fa-pen"></i></span>
+							<input type="text" class="form-control" name="editnomSubCat" id="editnomSubCat">
+						</div>
+						<input type="hidden" name="editidsubcat" id="editidsubcat">
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+				<button type="button" id="btnEditSubCat" class="btn btn-primary">Guardar</button>
+			</div>
+			</div>
+		</div>
+		</div>
+
+
+		<!-- Modal Categorias-->
+		<div class="modal fade" id="staticBackdropCat" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropCatLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="staticBackdropCatLabel">Editar Categoria</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div id="modal-body" class="modal-body">
+				<div class="container">
+					<div class="row">
+						<label for="editnomCat" class="form-label" style="color: black;">Nombre</label>
+						<div class="input-group mb-3">
+							<span class="input-group-text" id="basic-addon1"><i class="fas fa-pen"></i></span>
+							<input type="text" class="form-control" name="editnomCat" id="editnomCat">
+						</div>
+
+						
+					</div>
+					<h5>Subcategorias</h5> 
+					<hr>
+					<div class="row text-center" id="body_subcategorias">
+						
+					</div>
+
+					<input type="hidden" name="editidcat" id="editidcat">
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+				<button type="button" id="btnEditCat" class="btn btn-primary">Guardar</button>
+			</div>
+			</div>
+		</div>
+		</div>
 
 		<!-- Footer -->
 		{{> footer}}

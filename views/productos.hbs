@@ -304,7 +304,7 @@
 						 mandaMensaje('unsuccess');
 						 div_mensaje.html('Prodcutos - Revisa los campos modificados');
 						 return;
-					}else if ( ctrl_nombre.length > 50 || ctrl_descripcion.length > 50 || ctrl_precio == "0" ){
+					}else if ( ctrl_nombre.length > 500 || ctrl_descripcion.length > 500 || ctrl_precio == "0" ){
 						mandaMensaje('unsuccess');
 						 div_mensaje.html('Productos - La informacion no puede tener mas de 50 caracteres, el precio debe ser diferente de 0.');
 						 return;
